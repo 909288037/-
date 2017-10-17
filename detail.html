@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/public.css">
+</head>
+<body>
+    <ul class="box2">
+        <li>
+            <span>编号:</span>
+            <span id="id">1</span>
+        </li>
+        <li>
+            <span>姓名:</span>
+            <span id="name">xxx</span>
+        </li>
+        <li>
+            <span>性别:</span>
+            <span id="sex">男</span>
+        </li>
+        <li>
+            <span>分数:</span>
+            <span id="score">32</span>
+        </li>
+    </ul>
+
+    <script src="js/jquery-1.11.1.js"></script>
+    <script>
+        (function ($) {
+            $.getUrlParam = function (name) {
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null) return unescape(r[2]); return null;
+            }
+        })(jQuery);
+        var id = $.getUrlParam("id");
+        console.log(id);
+        $.get("/getInfo?id="+id,function (data) {
+            console.log(data.data.id);
+            $("#id").html(data.data.id);
+            $("#name").html(data.data.name);
+            $("#sex").html(data.data.sex == 1? "女": "男");
+            $("#score").html(data.data.score);
+        })
+    </script>
+</body>
+</html>

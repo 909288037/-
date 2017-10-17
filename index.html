@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>学生信息</title>
+    <link rel="stylesheet" href="css/public.css">
+</head>
+<body class="box">
+    <h2>
+        <span>编号</span>
+        <span>姓名</span>
+        <span>性别</span>
+        <span>分数</span>
+    </h2>
+    <ul class="con">
+
+    </ul>
+<div class="page">
+    <span id="first">首页</span>
+    <span id="prev">&lt;</span>
+    <div class="pageNumBox">
+        <ul class="pageNum">
+
+        </ul>
+    </div>
+    <span id="next">&gt;</span>
+    <span id="last">尾页</span>
+    <input type="text" value="1">
+</div>
+
+    <script src="js/jquery-1.11.1.js"></script>
+    <script src="js/template-native.js"></script>
+    <script type="text/template" id="template">
+        <% for(var i =0; i < item.length; i++) {%>
+            <li>
+                <span><%=item[i]["id"]%></span>
+                <span><%=item[i]["name"]%></span>
+                <span><%=item[i]["sex"] == 1? "女" : "男"%></span>
+                <span><%=item[i]["score"]%></span>
+            </li>
+        <%}%>
+</script>
+    <script>
+        var pageModule = (function () {
+//            设定当前页总页数
+            var n = 1,
+                total = 0,
+                datalist = null;
+//            页面数据绑定及分页数据绑定
+            function bindHtml() {
+//                声明一个对象
+                var obj = {
+                    item :datalist
+                };
+//                调用模版引擎，生成学生内容
+                var conList = template("template",obj);
+                $(".con").append(conList);
+                var str = "";
+//                拼接字符串生成分页按钮
+                for (var i = 1; i <= total; i++) {
+//                    如果等于选中的分页，添加样式
+                    if ( i == n) {
+                        str +="<li class='active'>"+i+"</li>";
+                        continue;
+                    }
+                    str +="<li>"+i+"</li>";
+                }
+                $(".pageNum").html(str).css({width : total*28+"px"});
+//                点击分页切换对应分页内容和样式
+            }
+            function bindClick() {
+                $(document).on("click",".pageNum li",function () {
+                    $(".con").empty();
+                    $(this).addClass("active").siblings().removeClass("active");
+                    n = $(this).html();
+                    $("input").val(n);
+                    if(n > 5) {
+                        $(".pageNum").css({marginLeft : -(n-5)*28});
+                    }else {
+                        $(".pageNum").css({marginLeft :0});
+                    }
+                    sendAjax();
+                });
+                $("#first").on("click",function () {
+                    if (n == 1) {
+                        return;
+                    }
+                    n=1;
+                    $(".con").empty();
+                    $("input").val(n);
+                    if(n > 5) {
+                        $(".pageNum").css({marginLeft : -(n-5)*28});
+                    }else {
+                        $(".pageNum").css({marginLeft :0});
+                    }
+                    sendAjax();
+                });
+                $("#prev").on("click",function () {
+                    n--;
+                    if (n <= 1) {
+                        n=1;
+                    }
+                    if(n > 5) {
+                        $(".pageNum").css({marginLeft : -(n-5)*28});
+                    }else {
+                        $(".pageNum").css({marginLeft :0});
+                    }
+                    $(".con").empty();
+                    sendAjax();
+                });
+                $("#next").on("click",function () {
+                    n++;
+                    if (n > total) {
+                        n=total;
+                    }
+                    if(n > 5) {
+                        $(".pageNum").css({marginLeft : -(n-5)*28});
+                    }else {
+                        $(".pageNum").css({marginLeft :0});
+                    }
+                    $(".con").empty();
+                    sendAjax();
+                });
+                $("#last").on("click",function () {
+                    if (n == total) {
+                        return;
+                    }
+                        n=total;
+                    if(n > 5) {
+                        $(".pageNum").css({marginLeft : -(n-5)*28});
+                    }else {
+                        $(".pageNum").css({marginLeft :0});
+                    }
+                    $(".con").empty();
+                    $("input").val(n);
+                    sendAjax();
+                });
+                $("input").keyup(function (e) {
+                    if (e.keyCode == 13) {
+                        n = $.trim($(this).val());
+                        if (n=="") {
+                            return;
+                        }else if (n<1) {
+                            n=1;
+                        }else if (n > total) {
+                            n = total;
+                        }else if (isNaN(n)) {
+                            return;
+                        }
+                        $(".con").empty();
+                        $(this).val(n);
+                        sendAjax();
+                    }
+                });
+                $(document).on("click",".con li",function () {
+                    var id= $(this).children("span:eq(0)").html();
+                    window.location.href = "detail.html?id="+id;
+                })
+            }
+            function sendAjax() {
+                $.get('/getData?n='+n,function (data) {
+                    if (data && data.code == 0) {
+                        total = data.total;
+//                        console.log(data);
+                        datalist = data["data"];
+                        bindHtml();
+                    }
+                },"json");
+            }
+            function init() {
+                sendAjax();
+                bindClick();
+            }
+            return {init: init};
+        })();
+        pageModule.init();
+    </script>
+</body>
+</html>
